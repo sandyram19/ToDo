@@ -90,14 +90,18 @@ app.post("/",function(req,res){
         name: task
     });
     if (listName==="Today"){
-    item.save();
-    res.redirect("/"+listName);
+    item.save().then(function(){
+        res.redirect("/");
+    });
+    
     }
     else{
         List.findOne({name:listName}).then(function(foundList){
             foundList.items.push(item);
-            foundList.save();
-            res.redirect("/"+listName);
+            foundList.save().then(function(){
+                res.redirect("/"+listName);
+            });
+            
         })
     }
     
@@ -116,8 +120,8 @@ app.post("/delete",function(req,res){
     const listName=req.body.listName;
 
     if (listName==="Today"){
-        Item.findByIdAndRemove(checkedItemId).then(function(){console.log("Deleted");}).catch(function(err){console.log(err);})
-        res.redirect("/");
+        Item.findByIdAndRemove(checkedItemId).then(function(){console.log("Deleted");res.redirect("/");}).catch(function(err){console.log(err);})
+        
     }else{
          List.findOneAndUpdate({name: listName},{$pull:{items:{_id: checkedItemId}}}).then(function(foundList){
             res.redirect("/"+listName);
@@ -126,13 +130,7 @@ app.post("/delete",function(req,res){
     
 });
 
-app.get("/work",function(req,res){
-    res.render("list",{ListTitle:"Work List",newListItems: workItems})
-})
 
-app.get("/about",function(req,res){
-    res.render("about");
-})
 const port=process.env.PORT || 3000;
 app.listen(port,function(){console.log("server running");});
 
